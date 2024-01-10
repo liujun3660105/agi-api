@@ -1,0 +1,8 @@
+{
+    "_type": "prompt",
+    "input_variables": [
+      "question",
+      "context"
+    ],
+    "template_path": "./prompt/docQA/query.txt"
+}
