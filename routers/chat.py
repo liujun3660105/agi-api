@@ -63,19 +63,18 @@ def get_settings():
 async def root(file: UploadFile = File(...)):
     # print()
     settings = config.settings
+    print('settings',settings)
     
     psf_reader = PdfReader(file.file)
     print('psf_reader',psf_reader)
     text = ""
     for page in psf_reader.pages:
         text += page.extract_text()
-    print('text',text)
     text_splitter = CharacterTextSplitter(chunk_size=200,
                                           chunk_overlap=20,
                                           separator='\n')
     docs = text_splitter.split_text(text)
-    print('docs', docs)
-    embeddings = OpenAIEmbeddings(base_url=settings.openai_api_key, api_key=settings.openai_api_base)
+    embeddings = OpenAIEmbeddings(base_url=settings.openai_api_base, api_key=settings.openai_api_key)
     collectionName ='langchain_collection_'+generate_random_string(5)
     vector_db = milvus.Milvus.from_texts(
         docs,
@@ -96,7 +95,7 @@ async def root(file: UploadFile = File(...)):
 
 async def send_message(chatQuery: ChatQueryModel)->AsyncIterable[str]:
     settings = config.settings
-    # print('settings',config.settings)
+    print('settings',config.settings)
     query = chatQuery.query
     collectionName = chatQuery.collectionName
     embeddings = OpenAIEmbeddings(base_url=settings.openai_api_base, api_key=settings.openai_api_key)
