@@ -1,6 +1,6 @@
 from typing import Any,AsyncIterable
 from fastapi import APIRouter,Depends, File, Form, UploadFile
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter,RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import milvus
 
@@ -70,10 +70,13 @@ async def root(file: UploadFile = File(...)):
     text = ""
     for page in psf_reader.pages:
         text += page.extract_text()
-    text_splitter = CharacterTextSplitter(chunk_size=200,
+    text=text.replace("[", "").replace("]", "")
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=200,
                                           chunk_overlap=20,
-                                          separator='\n')
+                                          separators=["\n\n", "\n", " ", ""],
+                                          length_function=len)
     docs = text_splitter.split_text(text)
+    print('length',len(docs))
     embeddings = OpenAIEmbeddings(base_url=settings.openai_api_base, api_key=settings.openai_api_key)
     collectionName ='langchain_collection_'+generate_random_string(5)
     vector_db = milvus.Milvus.from_texts(
